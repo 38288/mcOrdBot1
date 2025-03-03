@@ -1,12 +1,12 @@
-import os
-import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import Message, WebAppInfo
-
+import os
 from dotenv import find_dotenv, load_dotenv
-load_dotenv(find_dotenv())
+import asyncio
 
+# Загрузка переменных окружения
+load_dotenv(find_dotenv())
 
 # Инициализация бота и диспетчера
 bot = Bot(token=os.getenv('TOKEN'))
@@ -15,46 +15,21 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
-    user_id = message.from_user.id
-    chat_id = message.chat.id
-    await message.answer(
-        f"Твой ID: <code>{user_id}</code>\n"
-        f"Чат ID: <code>{chat_id}</code>",
-        parse_mode="HTML"
+    # Создаем клавиатуру с кнопкой для открытия Web App
+    markup = types.ReplyKeyboardMarkup(
+        keyboard=[
+            [types.KeyboardButton(text="Открыть сайт", web_app=WebAppInfo(url='https://www.google.com'))]
+        ],
+        resize_keyboard=True  # Делаем клавиатуру компактной
     )
-    markup = types.ReplyKeyboardMarkup()
-    markup.add(types.KeyboardButton("открыть сайт", web_app=WebAppInfo(url='')))
-    await message.answer("привет", reply_markup=markup)
 
-
-
-async def on_startup():
-    """Действия при запуске бота."""
-    print('Бот стартовал')
-
-
-
-async def on_shutdown():
-    """Действия при остановке бота."""
-    print('Бот остановлен')
+    # Отправляем сообщение с клавиатурой
+    await message.answer("Привет! Нажми на кнопку ниже, чтобы открыть сайт.", reply_markup=markup)
 
 
 async def main():
-    """Основная функция запуска бота."""
-    dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
-
-    try:
-        await dp.start_polling(bot)
-    except Exception as e:
-        print(f"Ошибка при запуске бота: {repr(e)}")
-    finally:
-        await bot.session.close()
+    await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
-    print('1')
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print('Бот остановлен вручную')
+    asyncio.run(main())
